@@ -18,9 +18,15 @@ from django.contrib import admin
 
 from kaka_app1 import views as app1_views
 from navi import views as navi_views
+from check_box import views as cb_views
+
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', app1_views.index, name='index'),
     url(r'^manage/', navi_views.manage, name='manage'),
+    url(r'^edit/', navi_views.edit, name='edit'),
+    url(r'^modify/', navi_views.modify, name='modify'),
+    url(r'^checkbox/', cb_views.cb_index, name='checkbox'),
+    url(r'^delete/', navi_views.delete, name='delete'),
 ]

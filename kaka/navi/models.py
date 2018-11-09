@@ -11,7 +11,7 @@ sys.setdefaultencoding('utf8')
 
 # Create your models here.
 class Navi(models.Model):
-    name = models.CharField(verbose_name=u'名称', max_length=50)
+    name = models.CharField(verbose_name=u'名称', unique=True, max_length=50)
     description = models.CharField(verbose_name=u'描述', max_length=50)
     url = models.URLField(verbose_name=u'URL')
 

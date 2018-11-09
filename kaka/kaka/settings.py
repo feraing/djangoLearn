@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'kaka_app1',
     'navi',
+    'check_box',
 ]
 
 MIDDLEWARE = [

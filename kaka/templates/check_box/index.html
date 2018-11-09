@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+    <link rel="stylesheet" href="../../static/bootstrap3/css/bootstrap.css">
+    <style>
+        .container{
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <ul class="breadcrumb">
+        <li><a href="{% url 'index' %}">Home</a></li>
+        <li class="active">Check_box</li>
+    </ul>
+    <div class="content">
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th><input type="checkbox" id="cbAll"></th>
+                <th>课程名称</th>
+                <th>所属学院</th>
+            </tr>
+            </thead>
+            <tbody id="j_tb">
+            <tr>
+                <td><input type="checkbox" value="JavaScript"></td>
+                <td>JavaScript</td>
+                <td>前端学院</td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" value="Python"></td>
+                <td>Python</td>
+                <td>Python学院</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <button class="btn btn-info" id="del">删除</button>
+</div>
+<script src="../../static/jquery/jquery1.10.2.min.js"></script>
+<script src="../../static/bootstrap3/js/bootstrap.js"></script>
+<script src="../../static/csrf/csrf.js"></script>
+<script>
+    $(function () {
+        $("#cbAll").click(function () {
+            // 获取标题栏的checkbox的值
+            var isChecked = $("#cbAll").prop("checked");
+            // 给标题栏下边的checkbox设置值
+            $("#j_tb input").prop("checked", isChecked);
+        });
+        
+        $("#j_tb input").click(function () {
+            // 获取标题栏下边的checkbox的总数量
+            var allLength = $("#j_tb input").length;
+            // 获取标题栏下边的checkbox中选中的数量
+            var checkedLength = $("#j_tb input:checked").length;
+            if(allLength == checkedLength){
+                // 判断数量，相等就让标题栏选中
+                $("#cbAll").prop("checked", true);
+            }else{
+                $("#cbAll").prop("checked", false);
+            }
+        });
+
+        $("#del").click(function () {
+            var $checkedLength = $("#j_tb input:checked").length;
+            if($checkedLength<=0){
+                alert("至少选择一项");
+                return false;
+            }else{
+                var $ids = [];
+                // 找到被选中的checkbox集合
+                var $chkBoxes = $("#j_tb").find("input:checked");
+                // 遍历被选中的checkbox集合
+                $($chkBoxes).each(function () {
+                    // 找到对应checkbox中data-id属性值，然后push给空数组ids
+                    $ids.push($(this).attr('value'));
+                });
+                // 将数组转化为用逗号隔开的字符串
+                var $ids_str = $ids.join(',');
+                console.log($ids_str);
+            }
+        })
+    })
+</script>
+</body>
+</html>

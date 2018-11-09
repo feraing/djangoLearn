@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>manager</title>
-    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../static/bootstrap3/css/bootstrap.css">
     <style>
         .container{
             margin-top: 50px;
@@ -15,9 +15,10 @@
             width: 400px;
             margin: 0 auto;
         }
+        .modal-msg{
+            color: red;
+        }
     </style>
-    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
-	<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
 <div class="container">
@@ -38,7 +39,8 @@
                     </h4>
                 </div>
                 <div class="modal-body">
-                    <form class="form-horizontal" role="form">
+                    <form class="form-horizontal" role="form" action="{% url 'manage' %}" method="post">
+                        <span class="modal-msg"></span>
                       <div class="form-group">
                         <label for="firstname" class="col-sm-2 control-label">名称</label>
                         <div class="col-sm-10">
@@ -46,15 +48,15 @@
                         </div>
                       </div>
                       <div class="form-group">
-                        <label for="lastname" class="col-sm-2 control-label">描述</label>
+                        <label for="description" class="col-sm-2 control-label">描述</label>
                         <div class="col-sm-10">
-                          <input type="text" class="form-control" id="lastname" placeholder="请输入描述">
+                          <input type="text" class="form-control" id="description" placeholder="请输入描述">
                         </div>
                       </div>
                       <div class="form-group">
-                        <label for="lastname" class="col-sm-2 control-label">网址</label>
+                        <label for="urlname" class="col-sm-2 control-label">网址</label>
                         <div class="col-sm-10">
-                          <input type="text" class="form-control" id="lastname" placeholder="请输入网址">
+                          <input type="text" class="form-control" id="urlname" placeholder="请输入网址">
                         </div>
                       </div>
                     </form>
@@ -62,7 +64,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">关闭
                     </button>
-                    <button type="button" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary" id="btn_add">
                         提交
                     </button>
                 </div>
@@ -72,18 +74,19 @@
     <table class="table table-bordered">
         <theader>
             <tr>
-                <th><input type="checkbox"></th>
+                <th><input type="checkbox" id="j_thAll"></th>
                 <th>名称</th>
                 <th>描述</th>
                 <th>URL</th>
             </tr>
         </theader>
-        <tbody>
+        <tbody id="j_tb">
         {% if entries %}
         {% for e in entries %}
         <tr>
-            <td><input type="checkbox"></td>
-            <td><a href="#">{{e.name}}</a></td>
+            <td><input type="checkbox" value="{{e.name}}"></td>
+            <!--<td><a href="{{e.url}}" target="_blank">{{e.name}}</a></td>-->
+            <td><a href="javascript:void(0)" class="e_name" data-toggle="modal" data-target="#modifyName">{{e.name}}</a></td>
             <td>{{e.description}}</td>
             <td>{{e.url}}</td>
         </tr>
@@ -93,7 +96,214 @@
         {% endif %}
         </tbody>
     </table>
-    <button class="btn btn-danger">删除</button>
+    <div class="modal fade" id="modifyName" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2" aria-hidden="true" data-backdrop="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        &times;
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel2">修改导航条目</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" role="form" action="{% url 'manage' %}" method="post">
+                        <span class="modal-msg" id="mod_span"></span>
+                        <div class="form-group">
+                            <label for="firstname" class="col-sm-2 control-label">名称</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="mod_firstname" placeholder="请输入名称">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="description" class="col-sm-2 control-label">描述</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="mod_description" placeholder="请输入描述">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="urlname" class="col-sm-2 control-label">网址</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="mod_urlname" placeholder="请输入网址">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="btn_mod">修改</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+    <button class="btn btn-danger" id="del">删除</button>
 </div>
+<script src="../../static/jquery/jquery1.10.2.min.js"></script>
+<script src="../../static/bootstrap3/js/bootstrap.js"></script>
+<script src="../../static/csrf/csrf.js"></script>
+<script>
+    $(function () {
+        function clear_input(){
+            $("span").val('');
+            $("#firstname").val('');
+            $("#description").val('');
+            $("#urlname").val('');
+        }
+        $("#btn_add").click(function () {
+            var firstname = $("#firstname").val();
+            var description = $("#description").val();
+            var urlname = $("#urlname").val();
+            if(firstname == '' || description == '' || urlname == ''){
+                // $("span").text("输入不能为空!");
+                alert("输入不能为空!");
+                clear_input();
+            }else{
+                // $("span").text("OK!");
+                var expression = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
+                var objExp = new RegExp(expression);
+                if(objExp.test(urlname) != true){
+                    alert("URL地址不正确！例：http://www.baidu.com");
+                    return false;
+                }else{
+                    $.ajax({
+                        url:'/manage/',
+                        // 此处必须以/结尾，否则报错
+                        type:'post',
+                        data:{
+                            'firstname':$("#firstname").val(),
+                            'description':$("#description").val(),
+                            'urlname':$("#urlname").val(),
+                        },
+                        success:function (data) {
+                            var dataObj = JSON.parse(data);
+                            // $("span").text(dataObj["status"]);
+                            if(dataObj["status"] == '0'){
+                                alert("创建成功！");
+                                clear_input();
+                                $("#addUrl").modal("hide");
+                                window.location.reload();
+                            }else{
+                                alert("创建失败!"+dataObj["msg"]);
+                                clear_input();
+                            }
+                            //
+                        }
+                    })
+                }
+            }
+        });
+
+        // 编辑信息
+        $(".e_name").click(function () {
+            $("span").text($(this).html());
+            $("span").css("display", "none");
+            $.ajax({
+                url:'/edit/',
+                type:'post',
+                data:{
+                    'mod_name':$(this).html(),
+                },
+                success:function (data) {
+                    var mod_data = JSON.parse(data);
+                    $("#mod_firstname").val(mod_data["name"]);
+                    $("#mod_description").val(mod_data["des"]);
+                    $("#mod_urlname").val(mod_data["url"]);
+                }
+            })
+        });
+        
+        // 修改信息
+        $("#btn_mod").click(function () {
+            var m_name = $("#mod_span").text();
+            var firstname = $("#mod_firstname").val();
+            var description = $("#mod_description").val();
+            var urlname = $("#mod_urlname").val();
+            console.log(m_name);
+            if(firstname == '' || description == '' || urlname == ''){
+                // $("span").text("输入不能为空!");
+                alert("输入不能为空!");
+            }else{
+                // $("span").text("OK!");
+                var expression = /http(s)?:\/\/([\w-]+\.)+[\w-]+(\/[\w- .\/?%&=]*)?/;
+                var objExp = new RegExp(expression);
+                if(objExp.test(urlname) != true){
+                    alert("URL地址不正确！例：http://www.baidu.com");
+                    return false;
+                }else{
+                    $.ajax({
+                        url:'/modify/',
+                        // 此处必须以/结尾，否则报错
+                        type:'post',
+                        data:{
+                            'm_name': m_name,
+                            'firstname':$("#mod_firstname").val(),
+                            'description':$("#mod_description").val(),
+                            'urlname':$("#mod_urlname").val(),
+                        },
+                        success:function (data) {
+                            var dataObj = JSON.parse(data);
+                            // $("span").text(dataObj["status"]);
+                            if(dataObj["status"] == '0'){
+                                alert("修改成功！");
+                                clear_input();
+                                $("#modifyName").modal("hide");
+                                window.location.reload();
+                            }else{
+                                alert("修改失败!"+dataObj["msg"]);
+                                clear_input();
+                                $("#modifyName").modal("hide");
+                            }
+                            //
+                        }
+                    })
+                }
+            }
+        });
+
+        // 全选or全不选
+        $("#j_thAll").click(function () {
+            var isChecked = $("#j_thAll").prop("checked");
+            $("#j_tb input").prop("checked", isChecked);
+        });
+
+        // 选中
+        $("#j_tb input").click(function () {
+            var allLength = $("#j_tb input").length;
+            var checkedLength = $("#j_tb input:checked").length;
+            if(allLength == checkedLength){
+                $("#j_thAll").prop("checked", true);
+            }else{
+                $("#j_thAll").prop("checked", false);
+            }
+        });
+
+        // 获取checkbox被选中的一行的属性值
+        $("#del").click(function () {
+            var $checkedLth = $("#j_tb input:checked").length;
+            if($checkedLth <= 0){
+                alert("至少选择一项");
+                return false;
+            }else{
+                var $chks = [];
+                var $checkedNum = $("#j_tb").find("input:checked");
+                $($checkedNum).each(function () {
+                    $chks.push($(this).attr('value'));
+                });
+                var $chks_str = $chks.join(',');
+                $.ajax({
+                    url:'/delete/',
+                    type:'post',
+                    data:{
+                        name_str: $chks_str,
+                    },
+                    success:function (data) {
+                        var dataObj = JSON.parse(data);
+                        alert(dataObj["msg"]);
+                        window.location.reload();
+                    }
+                })
+            }
+        })
+    })
+</script>
 </body>
 </html>
