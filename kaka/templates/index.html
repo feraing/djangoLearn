@@ -67,16 +67,25 @@
 <div class="container">
 	<div class="box-body">
 		<div class="btn">
-			<a type="button" class="btn btn-info" href="{% url 'manage' %}">管理站点</a>
+			<a type="button" class="btn btn-success" href="{% url 'manage' %}">管理站点</a>
             <a type="button" class="btn btn-info" href="{% url 'checkbox' %}">checkbox</a>
+            <a type="button" class="btn btn-info" href="{% url 'pagination' %}">分页</a>
 		</div>
 		<div class="box">
+            {% if entries %}
+            {% for entry in entries %}
 			<div class="content">
-				<p class="header">百度</p>
+				<p class="header">{{entry.name}}</p>
 				<p class="footer">
-					<a href="http://www.baidu.com" target="_blank">百度</a>
+					<a href="{{entry.url}}" target="_blank">{{entry.description}}</a>
 				</p>
 			</div>
+            {% endfor %}
+            {% else %}
+            <div class="content">
+                <p class="header">暂时无数据，请使用管理站点添加</p>
+            </div>
+            {% endif %}
 		</div>
 	</div>
 </div>

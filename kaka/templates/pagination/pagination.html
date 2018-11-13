@@ -1,0 +1,71 @@
+{% extends '../base_test.html' %}
+
+{% block title %}Pagination{% endblock %}
+
+{% block style %}
+<style>
+    .container{
+        margin: 10px auto;
+    }
+    .container>.pagi{
+        float: right;
+    }
+    .table-height{
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<ul class="breadcrumb">
+    <li><a href="{% url 'index' %}">首页</a></li>
+    <li class="active">分页</li>
+</ul>
+<div class="table-height">
+    <table class="table table-bordered">
+        <theader>
+            <tr>
+                <th><input type="checkbox" id="j_thAll"></th>
+                <th>名称</th>
+                <th>描述</th>
+                <th>URL</th>
+            </tr>
+        </theader>
+        <tbody id="j_tb">
+        {% if contacts %}
+        {% for e in contacts %}
+        <tr>
+            <td><input type="checkbox" value="{{e.name}}"></td>
+            <!--<td><a href="{{e.url}}" target="_blank">{{e.name}}</a></td>-->
+            <td><a href="javascript:void(0)" class="e_name" data-toggle="modal" data-target="#modifyName">{{e.name}}</a></td>
+            <td>{{e.description}}</td>
+            <td>{{e.url}}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="4">暂时没有数据</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<ul class="pagination">
+    <li>
+        {% if contacts.has_previous %}
+        <a href="?page={{ contacts.previous_page_number }}">&laquo;</a>
+        {% endif %}
+    </li>
+    {% for c in contacts.paginator.page_range %}
+        {% if contacts.number == c %}
+        <li class="active"><a href="?page={{ c }}">{{c}}</a></li>
+        {% else %}
+        <li><a href="?page={{ c }}">{{c}}</a></li>
+        {% endif %}
+    {% endfor %}
+    {% if contacts.has_next %}
+    <li><a href="?page={{ contacts.next_page_number }}">&raquo;</a></li>
+    {% endif %}
+</ul>
+{% endblock %}

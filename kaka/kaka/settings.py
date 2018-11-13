@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'kaka_app1',
     'navi',
     'check_box',
+    'pagination',
 ]
 
 MIDDLEWARE = [
@@ -83,7 +84,8 @@ DATABASES = {
         'NAME': 'kaka',
         'USER': 'root',
         'PASSWORD': '123456',
-        'HOST': '192.168.255.200',
+        # 'HOST': '192.168.255.200',
+        'HOST': '192.168.130.135',
     }
 }
 

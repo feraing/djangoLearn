@@ -19,6 +19,7 @@ from django.contrib import admin
 from kaka_app1 import views as app1_views
 from navi import views as navi_views
 from check_box import views as cb_views
+from pagination import views as pg_views
 
 
 urlpatterns = [
@@ -29,4 +30,5 @@ urlpatterns = [
     url(r'^modify/', navi_views.modify, name='modify'),
     url(r'^checkbox/', cb_views.cb_index, name='checkbox'),
     url(r'^delete/', navi_views.delete, name='delete'),
+    url(r'^pagination', pg_views.index, name='pagination'),
 ]
