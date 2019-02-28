@@ -39,12 +39,14 @@ def add(request):
 
 def check_job(request):
     if request.method == 'POST':
-        jobs = serializers.serialize('json', Content.objects.filter(content_status="进行中"))
-        if jobs:
+        choice = request.POST.get('choice')
+        jobs = serializers.serialize('json', Content.objects.filter(content_status=choice))
+        if json.loads(jobs):
             ret = {'status': 0, 'jobs': jobs}
+            print(ret)
             return HttpResponse(json.dumps(ret))
 
-        ret = {'status': 1, 'jobs': 'NO data'}
+        ret = {'status': 1, 'jobs': '无数据'}
         return HttpResponse(json.dumps(ret))
 
 
