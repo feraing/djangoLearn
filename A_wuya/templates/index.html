@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}">
+    <style>
+        .showtable{
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 style="text-align: center">这是首页</h1>
+    <hr>
+    <button class="btn btn-default" data-toggle="modal" data-target="#new_job">新增</button>
+    <button class="btn btn-primary" id="job_modify" disabled="disabled">修改</button>
+    <button class="btn btn-warning" id="job_ing">进行中</button>
+    <button class="btn btn-success" id="job_ok">已完成</button>
+
+    <div id="showdiv">
+        <table class="table table-bordered showtable" id="show_content">
+            <tr>
+                <td width="10px" style="text-align: center"><input type="checkbox"></td>
+                <td width="100px" style="text-align: center">时间</td>
+                <td>内容</td>
+                <td>备注</td>
+                <td width="80px" style="text-align: center">状态</td>
+            </tr>
+            <tbody id="tbody">
+            {% for ctt in ctts %}
+            <tr id="tb">
+                <td><input type="checkbox"></td>
+                <td style="text-align: center">{{ ctt.content_time|date:'Y-m-d' }}</td>
+                <td>{{ ctt.content }}</td>
+                <td>{{ ctt.remarks }}</td>
+                <td style="text-align: center">{{ ctt.content_status }}</td>
+            </tr>
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+    <div class="modal fade" id="new_job" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">新增内容</h4>
+                </div>
+                <div class="modal-body">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label for="content" class="col-sm-2 control-label">内容</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="content" placeholder="请输入内容">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="remark" class="col-sm-2 control-label">备注</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="remark" placeholder="请输入备注">
+                </div>
+              </div>
+            </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="cont_sub">提交</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+</div>
+<script src="{% static 'jquery/jquery1.10.2.min.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+<!--<script src="{% static 'csrf/csrf.js' %}"></script>-->
+<script>
+    $(function (){
+        $("#cont_sub").click(function (message) {
+            var is_content = $("#content").val();
+            var is_remark = $("#remark").val();
+            if(is_content == ""){
+                alert("输入内容为空！");
+            }else{
+                if(is_remark == ""){
+                    is_remark = '无';
+                }
+                $.ajax({
+                    url: '/add/',
+                    type: 'post',
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        'sub_remark': is_remark,
+                        'sub_content': is_content,
+                    },
+                    success: function (data) {
+                        var objdata = JSON.parse(data);
+                        if(objdata['status'] == '0'){
+                            alert("新增内容成功");
+                            $("#new_job").modal("hide");
+                            window.location.reload();
+                        }else{
+                            alert("新增内容失败："+ objdata['msg']);
+                        }
+                    error: function f() {
+                        alert("新增内容失败，请查看日志！");
+                        $("#new_job").modal("hide");
+                    }
+                    }
+                })
+            }
+        });
+
+        $("#job_ing").click(function () {
+            $.ajax({
+                url: '/check/',
+                type: 'post',
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                },
+                success: function (data) {
+                    var objdata = JSON.parse(data);
+                    if(objdata['status'] != '0'){
+                        alert("查询异常，请查看日志")
+                    }else{
+                        // console.log(objdata['jobs']);
+                        var jobs = eval(objdata['jobs']);
+                        // console.log(typeof(jobs));
+                        var str = "";
+                        for(var i in jobs){
+                            console.log(typeof(jobs[i].fields.content_time));
+                            // console.log(jobs[i].fields.content); 能够获取到content
+                            str += '<tr>' +
+                                    '<td><input type="checkbox"></td>' +
+                                '<td style="text-align: center">'
+                                + string2date(jobs[i].fields.content_time) + '</td>'
+                                + '<td>' + jobs[i].fields.content + '</td>'
+                                + '<td>' + jobs[i].fields.remarks + '</td>'
+                                + '<td style="text-align: center">'
+                                + jobs[i].fields.content_status + '</td>'
+                                + '</tr>';
+
+                        }
+                        $("#tbody").html(str);
+
+                    }
+                }
+            });
+        });
+
+        function time2string(time) {
+            var datetime = new Date();
+            datetime.setTime(time);
+            var year = datetime.getFullYear();
+            var month = datetime.getMonth() + 1 < 10 ? "0" + (datetime.getMonth() + 1) : datetime.getMonth() + 1;
+            var day = datetime.getDate() < 10 ? "0" + datetime.getDate() : datetime.getDate();
+            var hour = datetime.getHours() < 10 ? "0" + datetime.getHours() : datetime.getHours();
+            var minute = datetime.getMinutes() < 10 ? "0" + datetime.getMinutes() : datetime.getMinutes();
+            var second = datetime.getSeconds() < 10 ? "0" + datetime.getSeconds() : datetime.getSeconds();
+            // return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+            return year + "-" + month + "-" + day
+        }
+
+        function string2date(str) {
+            var tempstr = str.split("T");
+            return tempstr[0];
+        }
+    })
+</script>
+</body>
+</html>
