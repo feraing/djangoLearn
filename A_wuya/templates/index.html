@@ -141,14 +141,16 @@
                             var res_content = jsonobj[i].fields.content;
                             var res_remarks = jsonobj[i].fields.remarks;
                             var res_content_status = jsonobj[i].fields.content_status;
+                            console.log(res_time,res_content,res_remarks,res_content_status);
                             str += '<tr>'
-                                    +'<td><input type="checkbox"></td>'+
+                                    +'<td><input type="checkbox"></td>'
                                 +'<td style="text-align: center">'+string2date(res_time)+'</td>'
                                 +'<td>'+res_content+'</td>'
                                 +'<td>'+res_remarks+'</td>'
                                 +'<td style="text-align: center">'+res_content_status+'</td>'
                                 +'</tr>'
                         }
+                        console.log(str);
                         $("#tbody").html(str);
                     }else{
                         // str += '<tr><td colspan="5">'+objdata['jobs']+'</td></tr>';
