@@ -1,0 +1,38 @@
+{
+  "servers": [{
+    "port": 8999,
+	"host": "127.0.0.1",
+	"alias": "zk",
+	"queries": [
+	{
+	  "outputWriters" : [{
+	    "@class" : "com.googlecode.jmxtrans.model.output.InfluxDbWriterFactory",
+		"url" : "http://127.0.0.1:8086/",
+		"database" : "zookeeper",
+		"username" : "zkuser",
+		"password" : "zkpasswd",
+		"tags" : {"application": "RequestLatency"}
+	  }],
+	  "obj" : "org.apache.ZooKeeperService:name0=StandaloneServer_port*",
+	  "resultAlias" : "Service",
+	  "attr" : [
+	    "StartTime",
+		"Version",
+		"TickTime",
+		"MaxSessionTimeout",
+		"MinSessionTimeout",
+		"OutstandingRequests",
+		"ClientPort",
+		"NumAliveConnections",
+		"PacketsReceived",
+		"PacketsSent",
+		"MaxClientCnxnsPerHost",
+	    "MaxRequestLatency",
+		"MinRequestLatency",
+		"AvgRequestLatency"
+	  ]
+	}
+	],
+	"numQueryThreads": 1
+  }]
+}

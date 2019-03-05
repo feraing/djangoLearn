@@ -1,0 +1,195 @@
+wget https://github.com/downloads/jmxtrans/jmxtrans/jmxtrans-20121016.145842.6a28c97fbb-0.noarch.rpm
+
+
+rpm -ivh jmxtrans-20121016.145842.6a28c97fbb-0.noarch.rpm
+
+jmxtrans安装目录：/usr/share/jmxtrans
+jmxtrans配置文件 ：/etc/sysconfig/jmxtrans
+json文件默认目录：/var/lib/jmxtrans/
+日志路径：/var/log/jmxtrans/jmxtrans.log
+
+
+influx 安装与配置
+https://github.com/mike-zhang/mikeBlogEssays/blob/master/2017/20170206_InfluxDB%E5%AE%89%E8%A3%85%E5%8F%8A%E9%85%8D%E7%BD%AE.md
+二进制安装
+wget  https://dl.influxdata.com/influxdb/releases/influxdb-1.1.0.x86_64.rpm
+
+安装后，在/usr/bin下面有如下文件：
+influxd          influxdb服务器
+influx           influxdb命令行客户端
+influx_inspect   查看工具
+influx_stress    压力测试工具
+influx_tsm       数据库转换工具（将数据库从b1或bz1格式转换为tsm1格式）
+
+
+在/var/lib/influxdb/下面会有如下文件夹： --- 无！！！
+data            存放最终存储的数据，文件以.tsm结尾
+meta            存放数据库元数据
+wal             存放预写日志文件
+
+
+https://blog.51cto.com/oybw88/2107228
+influxdb的安装及简单使用
+
+influxDB    传统数据库中的概念
+    database    数据库
+    measurement 数据库中的表
+    points  表里面的一行数据
+
+
+influxdb数据的构成：
+Point由时间戳（time）、数据（field）、标签（tags）组成。
+Point属性 传统数据库中的概念
+    time    每个数据记录时间，是数据库中的主索引(会自动生成)
+    fields  各种记录值（没有索引的属性）也就是记录的值：温度， 湿度
+    tags    各种有索引的属性：地区，海拔
+
+
+influxdb使用的端口如下：
+
+    8083: Web admin管理服务的端口, http://localhost:8083
+    8086: HTTP API的端口
+    8088: 集群端口(目前还不是很清楚, 配置在全局的bind-address，默认不配置就是开启的)
+
+命令行下创建及查询
+通过influx命令进行管理，可以使用如下命令创建数据库：
+[root@xxx]# influx
+Visit https://enterprise.influxdata.com to register for updates, InfluxDB server management, and monitoring.
+Connected to http://localhost:8086 version 1.1.0
+InfluxDB shell version: 1.1.0
+> show databases // 查询当前的所有数据库
+name: databases
+name
+----
+_internal
+
+> create database testDB 
+> show databases
+name: databases
+name
+----
+_internal
+testDB
+
+> use testDB // 使用某个数据库
+Using database testDB
+> 
+> show measurements // 查看所有的表（show tables;）
+	
+> create user "zkuser" with password 'zkpasswd' with all privileges
+
+[root@zcheck-1 ~]# ps -ef |grep influx
+influxdb   874     1  0 Feb26 ?        00:12:14 /usr/bin/influxd -config /etc/influxdb/influxdb.conf
+root     11977 11945  0 14:50 pts/0    00:00:00 grep --color=auto influx
+
+
+"url": "http://192.168.255.80:8086/",
+"username": "root",
+"password": "123456",
+"database": "jmxDB",
+
+
+"url": "http://127.0.0.1:8086/",
+"username": "zkuser",
+"password": "zkpasswd",
+"database": "testDB",
+
+
+
+-------------------------------------
+2019-3-5
+grafana 安装
+wget https://s3-us-west-2.amazonaws.com/grafana-releases/release/grafana-4.1.1-1484211277.x86_64.rpm 
+sudo yum localinstall grafana-4.1.1-1484211277.x86_64.rpm 
+
+[root@zcheck-1 bin]# systemctl start grafana-server 
+[root@zcheck-1 bin]# systemctl status grafana-server
+
+
+配置
+Add data source --- Type: influxDB, Name:数据库名称，Http Settings：influxdb的地址 --- Add
+Panel Title --- Edit --- Panel data source ：选择数据库 --- A --- from,select,group by：选择列，时间等 --- 左上方保存
+
+
+
+
+环境：
+zookeeper
+infludb
+jmxtrans
+grafana
+
+软件版本
+
+
+架构图
+
+监控指标
+
+StartTime
+Version
+TickTime Client-Server通信心跳时间
+MaxSessionTimeout 会话超时时间
+MinSessionTimeout 会话超时时间
+OutstandingRequests 排队请求的数量
+ClientPort
+NumAliveConnections xxx
+PacketsReceived 收包数
+PacketsSent 发包数
+MaxClientCnxnsPerHost 单个客户端最大连接数
+MaxRequestLatency 最大响应时间
+MinRequestLatency 最小响应时间
+AvgRequestLatency 平均响应时间
+
+
+示例：
+{
+  "servers": [{
+    "port": 8999,
+	"host": "127.0.0.1",
+	"alias": "zk",
+	"queries": [
+	{
+	  "outputWriters" : [{
+	    "@class" : "com.googlecode.jmxtrans.model.output.InfluxDbWriterFactory",
+		"url" : "http://127.0.0.1:8086/",
+		"database" : "zookeeper",
+		"username" : "zkuser",
+		"password" : "zkpasswd",
+		"tags" : {"application": "RequestLatency"}
+		### 对应influxdb的tag功能，对于储存在同一个measurements里面的
+		### 不同监控指标可以区分
+		### 在grafana会用到，建议对每个监控指标都打上tags
+	  }],
+	  "obj" : "org.apache.ZooKeeperService:name0=StandaloneServer_port*",
+	  ### 对应jmx的ObjectName，监控的指标
+	  "resultAlias" : "Service",
+	  ### 对应metric的名称，在influxdb里面就是measurements名
+	  "attr" : [
+	  ### 对应ObjectName的属性，监控的指标的值
+	    "StartTime",
+		"Version",
+		"TickTime",
+		"MaxSessionTimeout",
+		"MinSessionTimeout",
+		"OutstandingRequests",
+		"ClientPort",
+		"NumAliveConnections",
+		"PacketsReceived",
+		"PacketsSent",
+		"MaxClientCnxnsPerHost",
+	    "MaxRequestLatency",
+		"MinRequestLatency",
+		"AvgRequestLatency"
+	  ]
+	}
+	],
+	"numQueryThreads": 1
+  }]
+}
+
+安装
+
+1、zookeeper
+2、infludb
+3、
